@@ -1,6 +1,7 @@
 # flitch
 
 ![flitch](logo.jpg)
+*Logo by [twitter.com/haggle](https://twitter.com/haggle)*
 
 A cute test harness that barks at you. Extremely minimal. WIP.
 
