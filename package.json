@@ -1,0 +1,32 @@
+{
+  "name": "flitch",
+  "version": "0.1.0",
+  "author": "kevinfiol",
+  "license": "MIT",
+  "repository": "https://github.com/kevinfiol/flitch",
+  "type": "module",
+  "description": "Minimal testing library",
+  "main": "dist/flitch.cjs",
+  "module": "dist/flitch.js",
+  "types": "index.d.ts",
+  "umd:name": "flitch",
+  "scripts": {
+    "test": "node test.js",
+    "build": "bundt index.js && node test.js"
+  },
+  "engines": {
+    "node": ">=14.8.x"
+  },
+  "files": [
+    "*.d.ts",
+    "dist"
+  ],
+  "devDependencies": {
+    "bundt": "^1.1.5"
+  },
+  "keywords": [
+    "testing",
+    "test",
+    "tdd"
+  ]
+}
