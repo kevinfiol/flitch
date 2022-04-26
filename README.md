@@ -1,10 +1,10 @@
 # flitch
 
-![flitch](logo.jpeg)
+![flitch](logo.jpg)
 
 *Logo by [twitter.com/haggle](https://twitter.com/haggle)*
 
-A cute test harness that barks at you. Extremely minimal. WIP.
+A cute testing library that barks at you. Extremely minimal. WIP.
 
 ```js
 import { test, not, only, run, init } from 'flitch';
@@ -34,15 +34,15 @@ only('this test will run, by itself! the first two tests are ignored', async () 
 run(); // this function is async. chain it if you want!
 ```
 
-The above ouputs:
+The above outputs:
 ```
 Tests Passed ✓: 1
 Tests Failed ✗: 0
 
-✓ All 1 tests passed.
-
 The following tests were skipped:
 this test will be skipped
+
+✓ All 1 tests passed.
 ```
 
 ## Install
