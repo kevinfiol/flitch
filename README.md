@@ -39,10 +39,10 @@ The above outputs:
 Tests Passed ✓: 1
 Tests Failed ✗: 0
 
+✓ All 1 tests passed.
+
 The following tests were skipped:
 this test will be skipped
-
-✓ All 1 tests passed.
 ```
 
 ## Install

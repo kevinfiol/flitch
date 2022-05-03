@@ -32,15 +32,15 @@ export function run() {
         console.log(`===\nTests Passed ✓: ${passes}`);
         console.warn(`Tests Failed ✗: ${failures}`);
 
-        if (skip.length) {
-            console.log('\nThe following tests were skipped:');
-            console.log(skip.join('\n'));
-        }
-
         if (failures) {
             logFail(`\n✗ Tests failed with ${failures} failing tests.`);
             process.exit(1);
         } else logPass(`\n✓ All ${passes} tests passed.`)
+
+        if (skip.length) {
+            console.log('\nThe following tests were skipped:');
+            console.log(skip.join('\n'));
+        }
     });
 };
 
