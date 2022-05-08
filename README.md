@@ -10,7 +10,7 @@ A cute testing library that barks at you.
 import { suite } from 'flitch';
 import { strict as assert } from 'assert';
 
-let sum; // declare arbitrary test variables
+let sum = 0; // declare arbitrary test variables
 
 const test = suite('Flitch Tests');
 
