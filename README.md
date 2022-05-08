@@ -4,7 +4,7 @@
 
 *Logo by [twitter.com/haggle](https://twitter.com/haggle)*
 
-A cute testing library that barks at you. Extremely minimal. WIP.
+A cute testing library that barks at you.
 
 ```js
 import { test, not, only, run, init } from 'flitch';
@@ -12,17 +12,30 @@ import { strict as assert } from 'assert';
 
 let sum = 0;
 
-init(); // clears global test runner state; only demonstrating here, not necessary in this case
+init(); // clears global test runner state
+
+test.before.each = () => {}; // will run before each test case
+
+test.before.all = () => {}; // will run before all test cases
+
+test.after.each = () => {}; // will run after each test case
+
+test.after.all = () => {}; // will run after all test cases
 
 test('addition works', () => {
   sum += 10;
-  assert.equal(sum, 10); // use whatever assertion library you want
-  return () => sum = 0; // cleans up after test is complete
+  assert.equal(sum, 10); // tests rely on thrown errors to detect failures
 });
 
 not('this test will be skipped', () => {
   sum += 20;
   assert.equal(sum, 21); // this would fail, but we're skipping this test! *shrugs*
+});
+
+test('this test cleans up after itself', () => {
+  sum += 100;
+}, () => {
+  sum -= 100;
 });
 
 only('this test will run, by itself! the first two tests are ignored', async () => {
@@ -31,7 +44,7 @@ only('this test will run, by itself! the first two tests are ignored', async () 
   assert.equal(sum, 50);
 });
 
-run(); // this function is async. chain it if you want!
+run(); // this function is a thenable; chain it if you want
 ```
 
 The above outputs:

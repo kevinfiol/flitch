@@ -10,13 +10,11 @@ test('regular test', () => {
 
 test('test cleanup', () => {
   assert.equal(foo, 1); // foo should still be one
-  return () => foo = 0;
-});
+}, () => foo = 0);
 
 test('did the last test clean up well?', () => {
   assert.equal(foo, 0);
-  return () => foo = 20;
-});
+}, () => foo = 20);
 
 test('what about the last one?', () => {
   assert.equal(foo, 20);
@@ -60,14 +58,13 @@ init();
 test('this test is asynchronous', async () => {
   foo = await Promise.resolve(100);
   assert.equal(foo, 100);
-
-  return async () => {
-    foo = await Promise.resolve(200);
-  };
+}, async () => {
+  foo = await Promise.resolve(200);
 });
 
 test('cleanups can be async as well', async () => {
   assert.equal(foo, 200);
 });
 
-await run();
+// await run();
+run();
