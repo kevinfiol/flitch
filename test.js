@@ -1,9 +1,16 @@
-import { test, not, only, run, init } from './dist/flitch.js';
+import { suite } from './dist/flitch.js';
 import { strict as assert } from 'assert';
 
-let foo = 0;
+let foo;
+
+let test = suite('flitch regular tests');
+
+test.before.all = () => {
+  foo = 0;
+};
 
 test('regular test', () => {
+  assert.equal(foo, 0);
   foo = 1;
   assert.equal(foo, 1);
 });
@@ -20,20 +27,23 @@ test('what about the last one?', () => {
   assert.equal(foo, 20);
 });
 
-await run();
+await test.run();
+test = suite('flitch only test');
 
-init();
+test.before.all = () => {
+  foo = 30;
+};
 
 test('this will not run', () => {
   foo = 220;
 });
 
-only('this will run', () => {
-  assert.equal(foo, 20); // should still equal 20
+test.only('this will run', () => {
+  assert.equal(foo, 30);
 });
 
-await run();
-init();
+await test.run();
+test = suite('flitch not test');
 
 test('this will run', () => {
   foo = 0;
@@ -43,7 +53,7 @@ test('this will also run', () => {
   foo += 1;
 });
 
-not('this will not run', () => {
+test.not('this will not run', () => {
   foo += 1;
 });
 
@@ -51,8 +61,8 @@ test('test should just equal 1', () => {
   assert.equal(foo, 1);
 });
 
-await run();
-init();
+await test.run();
+test = suite('async tests');
 
 // async tests
 test('this test is asynchronous', async () => {
@@ -66,5 +76,4 @@ test('cleanups can be async as well', async () => {
   assert.equal(foo, 200);
 });
 
-// await run();
-run();
+await test.run();
