@@ -61,7 +61,7 @@ Tests Failed ✗: 0
 ✓ All 1 tests passed.
 
 Only the following testcase was run:
-this test will run, by itself! the first two tests are ignored
+• this test will run, by itself! the first two tests are ignored
 ```
 
 ## Install
