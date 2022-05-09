@@ -1,8 +1,14 @@
-type Cleanup = () => void;
-type Testcase = () => void;
+type Callback = () => void | Promise<void>;
+type TestFn = (label: string, testcase: Callback, cleanup: Callback) => void | Promise<void>;
 
-export function test(label: string, testcase: Testcase, cleanup: Cleanup): void;
-export function not(label: string): void;
-export function only(label: string, testcase: Testcase, cleanup: Cleanup): void;
-export function run(): Promise<void>;
-export function init(): void;
+type Suite = {
+    (label: string, testcase: Callback, cleanup: Callback): void | Promise<void>;
+    test: TestFn;
+    only: TestFn;
+    not: (label: string) => void;
+    run: () => Promise<void>;
+    before: { each: Callback, all: Callback };
+    after: { each: Callback, all: Callback };
+};
+
+export function suite(name: string): Suite;

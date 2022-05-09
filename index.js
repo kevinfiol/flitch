@@ -2,7 +2,8 @@ let count = 0,
     ran = 0,
     fail = false,
     p = console.log,
-    pe = console.error;
+    pe = console.error,
+    f = (s, ...c) => c.map(x => `\x1b[${x}m`).join('') + `${s}\x1b[0m`;
 
 function noop() {}
 
@@ -44,16 +45,17 @@ export function suite(name) {
 
         await $.after.all();
 
-        p(`=== ${name}\nTests Passed ✓: ${passes}`);
+        p(f(name, 4, 1));
+        p(`Tests Passed ✓: ${passes}`);
         p(`Tests Failed ✗: ${failures}\n`);
 
         if (failures) {
             fail = true;
-            pe('\x1b[41m%s\x1b[0m', `✗ ${name}: ${failures} failing tests.`);
-        } else p('\x1b[42m%s\x1b[0m', `✓ ${name}: All ${passes} tests passed.`);
+            pe(f(`✗ ${failures} failing tests.`, 41));
+        } else p(f(`✓ All ${passes} tests passed.`, 42));
 
-        if (onlyTest) p(`\nOnly the following testcase was run:\n${onlyTest.label}`);
-        else if (skip.length) p(`\nThe following tests were skipped:\n${skip.join('\n')}`);
+        if (onlyTest) p(`\nOnly the following testcase was run:\n• ${onlyTest.label}`);
+        else if (skip.length) p(`\nThe following tests were skipped:\n• ${skip.join('\n• ')}`);
         p('');
 
         ran++;
@@ -67,7 +69,9 @@ export function suite(name) {
             passes++;
         } catch (e) {
             failures++;
-            pe(`Failed Test: "${label}":\n${e.message}`)
+            pe(f('✗ ' + label, 47, 30));
+            p(e.stack.split('\n')[4].trim());
+            p(e.message);
         }
 
         if (cleanup) await cleanup();

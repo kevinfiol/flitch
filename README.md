@@ -10,7 +10,7 @@ A cute testing library that barks at you.
 import { suite } from 'flitch';
 import { strict as assert } from 'assert';
 
-let sum; // declare arbitrary test variables
+let sum = 0; // declare arbitrary test variables
 
 const test = suite('Flitch Tests');
 
@@ -54,11 +54,11 @@ node test.js
 
 The above outputs:
 ```
-=== Flitch Tests
+Flitch Tests
 Tests Passed ✓: 1
 Tests Failed ✗: 0
 
-✓ Flitch Tests: All 1 tests passed.
+✓ All 1 tests passed.
 
 Only the following testcase was run:
 this test will run, by itself! the first two tests are ignored
