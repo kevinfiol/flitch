@@ -70,7 +70,6 @@ export function suite(name) {
         } catch (e) {
             failures++;
             pe(f('✗ ' + label, 47, 30));
-            p(e.stack.split('\n')[4].trim());
             p(e.message);
         }
 
