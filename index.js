@@ -34,7 +34,7 @@ export function suite(name) {
 
     $.run = () => Promise.resolve()
         .then($.before.all)
-        .then(async () => {
+        .then(async _ => {
             if (onlyTest) {
                 await runTestCase(onlyTest);
             } else {
@@ -44,7 +44,7 @@ export function suite(name) {
             }
         })
         .then($.after.all)
-        .then(() => {
+        .then(_ => {
             p(f(name, 4, 1));
 
             if (errors.length)
@@ -59,24 +59,27 @@ export function suite(name) {
                 pe(f(`✗ ${failures} failing tests.`, 41));
             } else p(f(`✓ All ${passes} tests passed.`, 42));
 
-            if (onlyTest) p(`\nOnly the following testcase was run:\n• ${onlyTest.label}`);
+            if (onlyTest) p(`\nOnly the following testcase was run:\n• ${onlyTest[0]}`);
             else if (skip.length) p(`\nThe following tests were skipped:\n• ${skip.join('\n• ')}`);
             p('');
 
             ran++;
             if (fail && ran == count) process.exit(1);
+        }).catch(e => {
+            pe(e);
+            process.exit(1);
         });
 
-    async function runTestCase(test) {
+    async function runTestCase([label, testcase, cleanup]) {
         try {
             await $.before.each();
-            await test[1]();
+            await testcase();
             passes++;
         } catch (e) {
-            errors.push([test[0], e.message]);
+            errors.push([label, e.message]);
         }
 
-        if (test[2]) await test[2]();
+        if (cleanup) await cleanup();
         await $.after.each();
     }
 
