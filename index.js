@@ -7,9 +7,9 @@ let count = 0,
 
 function noop() {}
 
-function printError(e) {
-    pe(f('✗ ' + e[0], 47, 30));
-    p(e[1]);
+function printError([label, message]) {
+    pe(f('✗ ' + label, 47, 30));
+    p(message);
 }
 
 export function suite(name) {
@@ -35,29 +35,20 @@ export function suite(name) {
     $.run = () => Promise.resolve()
         .then($.before.all)
         .then(async _ => {
-            if (onlyTest) {
-                await runTestCase(onlyTest);
-            } else {
-                for (let i = 0, len = tests.length; i < len; i += 1) {
-                    await runTestCase(tests[i]);
-                }
-            }
+            if (onlyTest) await runTestCase(onlyTest);
+            else for (let i = 0; i < tests.length; i += 1) await runTestCase(tests[i]);
         })
         .then($.after.all)
         .then(_ => {
             p(f(name, 4, 1));
 
-            if (errors.length)
-                errors.map(printError),
-                failures = errors.length;
+            if (failures = errors.length) errors.map(printError);
 
             p(`Tests Passed ✓: ${passes}`);
             p(`Tests Failed ✗: ${failures}\n`);
 
-            if (failures) {
-                fail = true;
-                pe(f(`✗ ${failures} failing tests.`, 41));
-            } else p(f(`✓ All ${passes} tests passed.`, 42));
+            if (failures) fail = true, pe(f(`✗ ${failures} failing tests.`, 41));
+            else p(f(`✓ All ${passes} tests passed.`, 42));
 
             if (onlyTest) p(`\nOnly the following testcase was run:\n• ${onlyTest[0]}`);
             else if (skip.length) p(`\nThe following tests were skipped:\n• ${skip.join('\n• ')}`);
