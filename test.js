@@ -1,5 +1,6 @@
 import { suite } from './dist/flitch.js';
 import { strict as assert } from 'assert';
+import { ModuleA, ModuleB } from './test/index.js';
 
 let foo;
 
@@ -76,4 +77,7 @@ test('cleanups can be async as well', async () => {
   assert.equal(foo, 200);
 });
 
-await test.run();
+await test.run()
+  // run module tests
+  .then(ModuleA.run)
+  .then(ModuleB.run);

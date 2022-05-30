@@ -7,31 +7,34 @@ let count = 0,
 
 function noop() {}
 
+function printError(e) {
+    pe(f('✗ ' + e[0], 47, 30));
+    p(e[1]);
+}
+
 export function suite(name) {
     count++;
-    let $,
-        tests = [],
+    let tests = [],
         skip = [],
+        errors = [],
         passes = 0,
         failures = 0,
-        onlyTest = null;
-
-    $ = (label, testcase, cleanup) =>
-        tests.push({label, testcase, cleanup})
+        onlyTest = null,
+        $ = (label, testcase, cleanup) =>
+            tests.push([label, testcase, cleanup]);
 
     $.test = $;
     $.before = { each: noop, all: noop };
     $.after = { each: noop, all: noop };
 
     $.only = (label, testcase, cleanup) =>
-        onlyTest = {label, testcase, cleanup};
+        onlyTest = [label, testcase, cleanup];
 
     $.not = label => skip.push(label);
 
-    $.run = () => Promise.resolve().then(async () => {
-        await $.before.all();
-
-        await new Promise(async (res) => {
+    $.run = () => Promise.resolve()
+        .then($.before.all)
+        .then(async () => {
             if (onlyTest) {
                 await runTestCase(onlyTest);
             } else {
@@ -39,41 +42,41 @@ export function suite(name) {
                     await runTestCase(tests[i]);
                 }
             }
+        })
+        .then($.after.all)
+        .then(() => {
+            p(f(name, 4, 1));
 
-            res(1);
+            if (errors.length)
+                errors.map(printError),
+                failures = errors.length;
+
+            p(`Tests Passed ✓: ${passes}`);
+            p(`Tests Failed ✗: ${failures}\n`);
+
+            if (failures) {
+                fail = true;
+                pe(f(`✗ ${failures} failing tests.`, 41));
+            } else p(f(`✓ All ${passes} tests passed.`, 42));
+
+            if (onlyTest) p(`\nOnly the following testcase was run:\n• ${onlyTest.label}`);
+            else if (skip.length) p(`\nThe following tests were skipped:\n• ${skip.join('\n• ')}`);
+            p('');
+
+            ran++;
+            if (fail && ran == count) process.exit(1);
         });
 
-        await $.after.all();
-
-        p(f(name, 4, 1));
-        p(`Tests Passed ✓: ${passes}`);
-        p(`Tests Failed ✗: ${failures}\n`);
-
-        if (failures) {
-            fail = true;
-            pe(f(`✗ ${failures} failing tests.`, 41));
-        } else p(f(`✓ All ${passes} tests passed.`, 42));
-
-        if (onlyTest) p(`\nOnly the following testcase was run:\n• ${onlyTest.label}`);
-        else if (skip.length) p(`\nThe following tests were skipped:\n• ${skip.join('\n• ')}`);
-        p('');
-
-        ran++;
-        if (fail && ran == count) process.exit(1);
-    });
-
-    async function runTestCase({ label, testcase, cleanup }) {
+    async function runTestCase(test) {
         try {
             await $.before.each();
-            await testcase();
+            await test[1]();
             passes++;
         } catch (e) {
-            failures++;
-            pe(f('✗ ' + label, 47, 30));
-            p(e.message + '\n');
+            errors.push([test[0], e.message]);
         }
 
-        if (cleanup) await cleanup();
+        if (test[2]) await test[2]();
         await $.after.each();
     }
 
