@@ -64,7 +64,7 @@ Only the following testcase was run:
 • this test will run, by itself! the first two tests are ignored
 ```
 
-*Note: All suites created using `suite` must be run for failed test scripts to properly exit with an error code.*
+*Note: All suites created using `suite` must be run for failed test scripts to properly exit.*
 
 ## Install
 
