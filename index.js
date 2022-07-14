@@ -23,13 +23,13 @@ function race(label, fn, timeout) {
     return Promise.race([
         new Promise((_, rej) =>
             timer = setTimeout(_ =>
-                rej(f('↻ ' + label + ' timed out.', 30, 43)),
+                rej(
+                    f('↻ [' + label + '] timed out.', 30, 43)
+                ),
                 1000 * timeout
             )
         ),
-        isFn(fn)
-            ? fn() || 1 && clear() // not promise
-            : fn.finally(clear)
+        promise.then(fn).finally(clear)
     ]);
 }
 
@@ -86,13 +86,14 @@ export function suite(name, { timeout = 1 } = {}) {
 
             if (onlyTest) p(`\nOnly the following testcase was run:\n• ${onlyTest[0]}`);
             else if (skip.length) p(f(`↷ ${skip.length} tests skipped.`, 30, 43));
-            p('');
         })
         .catch(e => {
+            p(f(name, 4, 1));
             pe(f(e.message || e, 41));
             fail = true;
         })
         .finally(_ => {
+            p('');
             if (++ran == count) {
                 let code = fail ? 1 : 0;
                 console.timeEnd(DURATION);
@@ -101,8 +102,9 @@ export function suite(name, { timeout = 1 } = {}) {
         });
 
     function runTestCase([label, testcase, x, y]) {
-        let _timeout = isNum(x) ? x : (isNum(y) || timeout);
-        let cleanup = isFn(x) ? x : (isFn(y) || noop);
+        let _timeout = isNum(x) ? x : (isNum(y) ? y : timeout);
+        let cleanup = isFn(x) ? x : (isFn(y) ? y : noop);
+        let addError = e => errors.push([label, e.message || e]);
 
         return race(
             label,
@@ -110,9 +112,15 @@ export function suite(name, { timeout = 1 } = {}) {
             _timeout
         )
             .then(_ => passes++)
-            .then(cleanup)
-            .then($.after.each)
-            .catch(e => errors.push([label, e.message || e]));
+            .catch(addError)
+            .finally(_ =>
+                race(
+                    label,
+                    promise.then(cleanup).then($.after.each),
+                    timeout
+                )
+                .catch(addError)
+            );
     }
 
     return $;
