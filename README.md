@@ -12,7 +12,7 @@ import { strict as assert } from 'assert';
 
 let sum = 0; // declare arbitrary test variables
 
-const test = suite('Flitch Tests');
+const test = suite('Flitch Tests', { timeout: 5 }); // set timeout to 5 seconds for all operations
 
 test.before.each = () => {}; // will run before each test case
 
@@ -32,14 +32,25 @@ test.not('this test will be skipped', () => {
   assert.equal(sum, 21); // this would fail, but we're skipping this test! *shrugs*
 });
 
-test('this test cleans up after itself', () => {
-  sum += 100;
-}, () => {
-  sum -= 100; // cleanup
+test.not('this test would timeout but we are skipping it as well', async () => {
+  await new Promise(resolve => setTimeout(resolve, 6 * 1000));
 });
 
-test.only('this test will run, by itself! the first two tests are ignored', async () => {
-  // async tests are cool!
+test('this test would not timeout!', async () => {
+  await new Promise(resolve => setTimeout(resolve, 6 * 1000));
+}, 7); // timeout can be specified per test
+
+test('this test cleans up after itself', async () => {
+  await new Promise(resolve => setTimeout(resolve, 2 * 1000));
+  sum += 100;
+},
+  3, // time out after 3 seconds
+  () => {
+    sum -= 100; // cleanup
+  }
+);
+
+test.only('this test will run, by itself!', async () => {
   sum = await Promise.resolve(50);
   assert.equal(sum, 50);
 });
@@ -61,7 +72,9 @@ Tests Failed ✗: 0
 ✓ All 1 tests passed.
 
 Only the following testcase was run:
-• this test will run, by itself! the first two tests are ignored
+• this test will run, by itself!
+
+Duration: 3.514ms
 ```
 
 *Note: All suites created using `suite` must be run for failed test scripts to properly exit.*
