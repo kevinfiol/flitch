@@ -11,9 +11,9 @@ let DURATION = 'Duration',
 
 function noop() {}
 
-function printError(e) {
-    pe(f('✗ ' + e[0], 47, 30));
-    p(e[1] + '\n');
+function printError([label, message]) {
+    pe(f('✗ ' + label, 47, 30));
+    p(message + '\n');
 }
 
 function race(label, fn, timeout) {

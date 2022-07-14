@@ -5,7 +5,7 @@ import { suite } from '../dist/flitch.js';
 let ran = false;
 const ModuleA = suite('ModuleA tests');
 
-ModuleA('tests adding', () => {
+ModuleA.test('tests adding', () => {
     ran = true;
     assert.equal(10, add(5, 5));
 });
