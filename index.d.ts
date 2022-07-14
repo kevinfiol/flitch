@@ -6,8 +6,7 @@ type TestFn =
     ((label: string, testcase: Callback, timeout?: number, cleanup?: Callback) => void | Promise<void>) |
     ((label: string, testcase: Callback, timeout?: number) => void | Promise<void>);
 
-type Suite = {
-    (label: string, testcase: Callback, cleanup?: Callback): void | Promise<void>;
+type Suite = TestFn & {
     test: TestFn;
     only: TestFn;
     not: (label: string) => void;
