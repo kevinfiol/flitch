@@ -2,6 +2,14 @@ import { suite } from './dist/flitch.js';
 import { strict as assert } from 'assert';
 import { ModuleA, ModuleB } from './test/index.js';
 
+function timer(timeout) {
+  return new Promise(res =>
+    setTimeout(() => {
+      res(1)
+    }, timeout)
+  );
+}
+
 let foo;
 
 let test = suite('flitch regular tests');
