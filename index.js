@@ -9,19 +9,28 @@ let DURATION = 'Duration',
     fail = false,
     p = console.log,
     pe = console.error,
-    promise = Promise.resolve(),
     isFn = x => typeof x == 'function',
     isNum = Number.isFinite,
     f = (s, ...c) => c.map(x => `\x1b[${x}m`).join('') + `${s}\x1b[0m`;
 
 function noop() {}
 
+function chain(...ops) {
+    let promise = Promise.resolve();
+
+    for (let i = 0, len = ops.length; i < len; i++) {
+        promise = promise.then(ops[i]);
+    }
+
+    return promise;
+}
+
 function printError([label, message]) {
     pe(f('✗ ' + label, 47, 30));
     p(message + '\n');
 }
 
-function race(label, fn, timeout) {
+function race(label, op, timeout) {
     let timer;
     let clear = _ => clearTimeout(timer);
 
@@ -34,9 +43,9 @@ function race(label, fn, timeout) {
                 1000 * timeout
             )
         ),
-        isFn(fn)
-            ? fn() || 1 && clear()
-            : fn.finally(clear)
+        isFn(op)
+            ? op() || 1 && clear()
+            : op.finally(clear)
     ]);
 }
 
@@ -53,7 +62,8 @@ suite.only = (name, ...args) => {
 export function suite(name, { timeout = 1 } = {}) {
     if (!skipSuite.includes(name)) suites++;
 
-    let tests = [],
+    let ctx = {},
+        tests = [],
         errors = [],
         skip = 0,
         passes = 0,
@@ -72,11 +82,11 @@ export function suite(name, { timeout = 1 } = {}) {
     $.not = $.skip = _ => skip++;
 
     $.run = _ => (onlySuite && name != onlySuite) || (skipSuite.includes(name))
-        ? promise.then(noop)
-        : runSuite()
+        ? chain(noop)
+        : runSuite();
 
     function runSuite() {
-        return promise.then(_ => {
+        return chain().then(_ => {
             p(f(name, 4, 1));
             if (ran == 0) console.time(DURATION);
             return race('before.all hook', $.before.all, timeout)
@@ -87,12 +97,19 @@ export function suite(name, { timeout = 1 } = {}) {
                 tests = [onlyTest];
 
             for (let i = 0, len = tests.length; i < len; i++) {
-                await runTestCase(tests[i]);
+                let [label, testcase, x, y] = tests[i];
+
+                await runOp(
+                    label,
+                    chain($.before.each, testcase),
+                    x,
+                    y,
+                    _ => (passes++, totalPasses++),
+                    $.after.each
+                );
             }
         })
-        .then(_ =>
-            race('after.all hook', $.after.all, timeout)
-        )
+        .then(_ => runOp('after.all hook', $.after.all))
         .then(_ => {
             if (failures = errors.length) {
                 errors.map(printError);
@@ -101,12 +118,6 @@ export function suite(name, { timeout = 1 } = {}) {
         })
         .catch(e => {
             pe(f(e, 41));
-
-            if (!failures) {
-                (failures = tests.length - passes) &&
-                    p('\n' + f(`✗ ${failures} tests failed.`, 41));
-            }
-
             totalFailures += failures;
             fail = true;
         })
@@ -134,22 +145,18 @@ export function suite(name, { timeout = 1 } = {}) {
         });
     }
 
-    function runTestCase([label, testcase, x, y]) {
-        let _timeout = isNum(x) ? x : (isNum(y) ? y : timeout);
+    function runOp(label, op, x, y, onSuccess = noop, onComplete = noop) {
+        let opTimeout = isNum(x) ? x : (isNum(y) ? y : timeout);
         let cleanup = isFn(x) ? x : (isFn(y) ? y : noop);
         let addError = e => errors.push([label, e.message || e]);
 
-        return race(
-            label,
-            promise.then($.before.each).then(testcase),
-            _timeout
-        )
-            .then(_ => (passes++, totalPasses++))
+        return race(label, op, opTimeout)
+            .then(onSuccess)
             .catch(addError)
             .finally(_ =>
                 race(
                     label,
-                    promise.then(cleanup).then($.after.each),
+                    chain(cleanup, onComplete),
                     timeout
                 )
                 .catch(addError)
