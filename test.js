@@ -150,7 +150,7 @@ test9.after.all = async () => {
 
 test9('SHOULD FAIL: Suite should fail', () => {});
 
-const test10 = suite('Testing contex');
+const test10 = suite('Testing context');
 
 test10.before.all = (ctx) => {
   ctx.foo = 10;
