@@ -15,11 +15,11 @@ let DURATION = 'Duration',
 
 function noop() {}
 
-function chain(...ops) {
+function chain(ctx, ...ops) {
     let promise = Promise.resolve();
 
     for (let i = 0, len = ops.length; i < len; i++) {
-        promise = promise.then(ops[i]);
+        promise = promise.then(_ => ops[i](ctx));
     }
 
     return promise;
@@ -82,14 +82,14 @@ export function suite(name, { timeout = 1 } = {}) {
     $.not = $.skip = _ => skip++;
 
     $.run = _ => (onlySuite && name != onlySuite) || (skipSuite.includes(name))
-        ? chain(noop)
+        ? chain(undefined, noop)
         : runSuite();
 
     function runSuite() {
         return chain().then(_ => {
             p(f(name, 4, 1));
             if (ran == 0) console.time(DURATION);
-            return race('before.all hook', $.before.all, timeout)
+            return runOp('before.all hook', chain(ctx, $.before.all));
         })
         .then(async _ => {
             if (onlyTest)
@@ -101,23 +101,25 @@ export function suite(name, { timeout = 1 } = {}) {
 
                 await runOp(
                     label,
-                    chain($.before.each, testcase),
+                    chain(ctx, $.before.each, testcase),
                     x,
                     y,
                     _ => (passes++, totalPasses++),
+                    _ => failures++,
                     $.after.each
                 );
             }
         })
-        .then(_ => runOp('after.all hook', $.after.all))
+        .then(_ =>
+            runOp('after.all hook', chain(ctx, $.after.all))
+        )
         .then(_ => {
-            if (failures = errors.length) {
-                errors.map(printError);
-                throw f(`✗ ${failures} tests failed.`, 41);
-            }
+            if (failures) throw f(`✗ ${failures} tests failed.`, 41);
+            if (errors.length) throw 0;
         })
         .catch(e => {
-            pe(f(e, 41));
+            errors.map(printError);
+            e && pe(f(e, 41));
             totalFailures += failures;
             fail = true;
         })
@@ -145,18 +147,18 @@ export function suite(name, { timeout = 1 } = {}) {
         });
     }
 
-    function runOp(label, op, x, y, onSuccess = noop, onComplete = noop) {
+    function runOp(label, op, x, y, onSuccess = noop, onFail = noop, onComplete = noop) {
         let opTimeout = isNum(x) ? x : (isNum(y) ? y : timeout);
         let cleanup = isFn(x) ? x : (isFn(y) ? y : noop);
         let addError = e => errors.push([label, e.message || e]);
 
         return race(label, op, opTimeout)
             .then(onSuccess)
-            .catch(addError)
+            .catch(e => addError(e) && onFail())
             .finally(_ =>
                 race(
                     label,
-                    chain(cleanup, onComplete),
+                    chain(ctx, cleanup, onComplete),
                     timeout
                 )
                 .catch(addError)

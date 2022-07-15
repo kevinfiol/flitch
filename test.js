@@ -150,6 +150,26 @@ test9.after.all = async () => {
 
 test9('SHOULD FAIL: Suite should fail', () => {});
 
+const test10 = suite.only('Testing contex');
+
+test10.before.all = (ctx) => {
+  ctx.foo = 10;
+};
+
+test10('foo should be 10', ctx => {
+  assert.equal(ctx.foo, 'asdf');
+  ctx.foo += 10;
+});
+
+test10('foo should be 20', ctx => {
+  assert.equal(ctx.foo, 20);
+});
+
+test10.after.all = (ctx) => {
+  // perform some cleanup maybe
+  ctx.foo = 0;
+};
+
 const runSuites = async (...suites) => {
   for (let i = 0; i < suites.length; i++) {
     await suites[i].run();
@@ -166,6 +186,7 @@ await runSuites(
   test7,
   test8,
   test9,
+  test10,
   ModuleA,
   ModuleB
 );
