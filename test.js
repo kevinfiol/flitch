@@ -150,24 +150,34 @@ test9.after.all = async () => {
 
 test9('SHOULD FAIL: Suite should fail', () => {});
 
-const test10 = suite.only('Testing contex');
+const test10 = suite('Testing contex');
 
 test10.before.all = (ctx) => {
   ctx.foo = 10;
 };
 
-test10('foo should be 10', ctx => {
-  assert.equal(ctx.foo, 'asdf');
+test10.before.each = (ctx) => {
+  ctx.foo += 1;
+};
+
+test10.after.each = (ctx) => {
+  ctx.foo += 1;
+};
+
+test10('foo should be 11', ctx => {
+  assert.equal(ctx.foo, 11);
   ctx.foo += 10;
 });
 
-test10('foo should be 20', ctx => {
-  assert.equal(ctx.foo, 20);
+test10('foo should be 22', ctx => {
+  assert.equal(ctx.foo, 23);
 });
 
 test10.after.all = (ctx) => {
+  assert.equal(ctx.foo, 24);
   // perform some cleanup maybe
   ctx.foo = 0;
+  assert.equal(ctx.foo, 0);
 };
 
 const runSuites = async (...suites) => {
