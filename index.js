@@ -59,7 +59,7 @@ suite.only = (name, ...args) => {
     return suite(name, ...args);
 };
 
-export function suite(name, { timeout = 1 } = {}) {
+export function suite(name, { timeout = 1, parallel = false } = {}) {
     if (!skipSuite.includes(name)) suites++;
 
     let ctx = {},
@@ -68,6 +68,7 @@ export function suite(name, { timeout = 1 } = {}) {
         skip = 0,
         passes = 0,
         failures = 0,
+        ops = parallel ? [] : null,
         onlyTest = null,
         $ = (label, testcase, x, y) =>
             tests.push([label, testcase, x, y]);
@@ -99,7 +100,7 @@ export function suite(name, { timeout = 1 } = {}) {
             for (let i = 0, len = tests.length; i < len; i++) {
                 let [label, testcase, x, y] = tests[i];
 
-                await runOp(
+                let op = runOp(
                     label,
                     chain(ctx, $.before.each, testcase),
                     x,
@@ -108,7 +109,12 @@ export function suite(name, { timeout = 1 } = {}) {
                     _ => failures++,
                     $.after.each
                 );
+
+                if (parallel) ops.push(op);
+                else await op;
             }
+
+            if (parallel) return Promise.allSettled(ops);
         })
         .then(_ =>
             runOp('after.all hook', chain(ctx, $.after.all))
