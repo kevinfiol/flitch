@@ -14,151 +14,158 @@ function timer(timeout) {
 
 let foo;
 
-let test = suite('Flitch Regular Tests');
+const test1 = suite('Flitch Regular Tests');
 
-test.before.all = () => {
+test1.before.all = () => {
   foo = 0;
 };
 
-test('regular test', () => {
+test1('regular test', () => {
   assert.equal(foo, 0);
   foo = 1;
   assert.equal(foo, 1);
 });
 
-test('test cleanup', () => {
+test1('test cleanup', () => {
   assert.equal(foo, 1); // foo should still be one
 }, () => foo = 0);
 
-test('did the last test clean up well?', () => {
+test1('did the last test clean up well?', () => {
   assert.equal(foo, 0);
 }, () => foo = 20);
 
-test('what about the last one?', () => {
+test1('what about the last one?', () => {
   assert.equal(foo, 20);
 });
 
-await test.run();
-test = suite('Flitch *Only* Test');
+const test2 = suite('Flitch *Only* Test');
 
-test.before.all = () => {
+test2.before.all = () => {
   foo = 30;
 };
 
-test('this will not run', () => {
+test2('this will not run', () => {
   foo = 220;
 });
 
-test.only('this will run by itself', () => {
+test2.only('this will run by itself', () => {
   assert.equal(foo, 30);
 });
 
-await test.run();
-test = suite('Flitch *Not* Test');
+const test3 = suite('Flitch *Not* Test');
 
-test('this will run', () => {
+test3('this will run', () => {
   foo = 0;
 });
 
-test('this will also run', () => {
+test3('this will also run', () => {
   foo += 1;
 });
 
-test.not('this will not run', () => {
+test3.not('this will not run', () => {
   foo += 1;
 });
 
-test('test should just equal 1', () => {
+test3('test should just equal 1', () => {
   assert.equal(foo, 1);
 });
 
-await test.run();
-test = suite('Flitch Async Tests');
+const test4 = suite('Flitch Async Tests');
 
 // async tests
-test('this test is asynchronous', async () => {
+test4('this test is asynchronous', async () => {
   foo = await Promise.resolve(100);
   assert.equal(foo, 100);
 }, async () => {
   foo = await Promise.resolve(200);
 });
 
-test('cleanups can be async as well', async () => {
+test4('cleanups can be async as well', async () => {
   assert.equal(foo, 200);
 });
 
-await test.run();
-test = suite('Flitch Timeout Tests *THIS SHOULD HAVE 1 FAILING TEST*', { timeout: 0.05 });
+const test5 = suite('Flitch Timeout Tests *THIS SHOULD HAVE 1 FAILING TEST*', { timeout: 0.05 });
 
-test('SHOULD FAIL: This test should timeout', async () => {
+test5('SHOULD FAIL: This test should timeout', async () => {
   await timer(0.06);
 });
 
-test('This test should not timeout', async () => {
+test5('This test should not timeout', async () => {
   await timer(0.06);
 }, 0.07);
 
-await test.run();
-test = suite('Flitch Varargs for Cleanup & Timeout *THIS SHOULD HAVE 2 FAILING TESTS*');
+const test6 = suite('Flitch Varargs for Cleanup & Timeout *THIS SHOULD HAVE 2 FAILING TESTS*');
 
-test('SHOULD FAIL: This test should time out', async () => {
+test6('SHOULD FAIL: This test should time out', async () => {
   await timer(0.06);
 }, 0.05);
 
 let baz = 10;
 
-test('This should test baz and then cleanup', () => {
+test6('This should test baz and then cleanup', () => {
   baz += 10
   assert.equal(baz, 20);
 }, () => {
   baz = 10;
 });
 
-test('baz should be 10', () => {
+test6('baz should be 10', () => {
   assert.equal(baz, 10);
 });
 
-test('SHOULD FAIL: should be able to pass cleanup and timeout', async () => {
+test6('SHOULD FAIL: should be able to pass cleanup and timeout', async () => {
   assert.equal(baz, 10);
   await timer(0.06);
 }, 0.05, () => {
   baz = 20;
 });
 
-test('should have cleaned up', () => {
+test6('should have cleaned up', () => {
   assert.equal(baz, 20);
 });
 
-await test.run();
-test = suite('Flitch Timeout in Before Each *SHOULD HAVE 1 FAILING TEST*', { timeout: 0.02 });
+const test7 = suite('Flitch Timeout in Before Each *SHOULD HAVE 1 FAILING TEST*', { timeout: 0.02 });
 
-test.before.each = async () => {
+test7.before.each = async () => {
   await timer(0.03);
 };
 
-test('SHOULD FAIL: time out in before.each hook', () => {
+test7('SHOULD FAIL: time out in before.each hook', () => {
   // should fail because of before.each hook
 });
 
-await test.run();
-test = suite('Flitch Timeout in Before All *SUITE FAILURE*', { timeout: 0.02 });
+const test8 = suite('Flitch Timeout in Before All *SUITE FAILURE*', { timeout: 0.02 });
 
-test.before.all = async () => {
+test8.before.all = async () => {
   await timer(0.03);
 };
 
-test('SHOULD FAIL: Suite should fail', () => {});
+test8('SHOULD FAIL: Suite should fail', () => {});
 
-await test.run();
-test = suite('Flitch Timeout in After All *SUITE FAILURE*', { timeout: 0.02 });
+const test9 = suite('Flitch Timeout in After All *SUITE FAILURE*', { timeout: 0.02 });
 
-test.after.all = async () => {
+test9.after.all = async () => {
   await timer(0.03);
 };
 
-test('SHOULD FAIL: Suite should fail', () => {});
+test9('SHOULD FAIL: Suite should fail', () => {});
 
-await test.run()
-  // run module tests
-  .then(ModuleA.run)
-  .then(ModuleB.run);
+const runSuites = async (...suites) => {
+  for (let i = 0; i < suites.length; i++) {
+    await suites[i].run();
+  }
+};
+
+await runSuites(
+  test1,
+  test2,
+  test3,
+  test4,
+  test5,
+  test6,
+  test7,
+  test8,
+  test9,
+  ModuleA,
+  ModuleB
+);

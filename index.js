@@ -53,8 +53,7 @@ suite.only = (name, ...args) => {
 export function suite(name, { timeout = 1 } = {}) {
     if (!skipSuite.includes(name)) suites++;
 
-    let ctx = {},
-        tests = [],
+    let tests = [],
         errors = [],
         skip = 0,
         passes = 0,
@@ -72,13 +71,15 @@ export function suite(name, { timeout = 1 } = {}) {
 
     $.not = $.skip = _ => skip++;
 
-    $.run = (onlySuite && name != onlySuite) || (skipSuite.includes(name))
+    $.run = _ => (onlySuite && name != onlySuite) || (skipSuite.includes(name))
         ? promise.then(noop)
-        : _ => promise
-        .then(_ => {
+        : runSuite()
+
+    function runSuite() {
+        return promise.then(_ => {
             p(f(name, 4, 1));
             if (ran == 0) console.time(DURATION);
-            return race(name, $.before.all, timeout)
+            return race('before.all hook', $.before.all, timeout)
         })
         .then(async _ => {
             if (onlyTest)
@@ -90,22 +91,28 @@ export function suite(name, { timeout = 1 } = {}) {
             }
         })
         .then(_ =>
-            race(name, $.after.all, timeout)
+            race('after.all hook', $.after.all, timeout)
         )
         .then(_ => {
             if (failures = errors.length) {
                 errors.map(printError);
-                totalFailures += failures;
                 throw f(`✗ ${failures} tests failed.`, 41);
             }
-
-            p(f(`✓ ${passes} tests passed.`, 42));
         })
         .catch(e => {
             pe(f(e, 41));
+
+            if (!failures) {
+                (failures = tests.length - passes) &&
+                    p(f(`\n✗ ${failures} tests failed.`, 41));
+            }
+
+            totalFailures += failures;
             fail = true;
         })
         .finally(_ => {
+            if (passes) p(f(`✓ ${passes} tests passed.`, 42));
+
             if (skip)
                 totalSkips += skip,
                 p(f(`↷ ${skip} tests skipped.`, 30, 43));
@@ -117,13 +124,15 @@ export function suite(name, { timeout = 1 } = {}) {
                 p(`Failed: ${totalFailures}`);
                 p(`Skipped: ${totalSkips}`);
 
-                // if (onlySuite) p(`\nOnly the following suite was run:\n• ${onlySuite}`);
-                // if (skipSuite.length || onlySuite) p(f(`↷ ${skip.length} tests skipped.`, 30, 43));
+                if (skipSuite.length || onlySuite) {
+                    p('\n' + f(`↷ ${skipSuite.length || suites - 1} suites skipped.`, 30, 43) + '\n');
+                }
+
                 console.timeEnd(DURATION);
-                p('');
                 process.exit(fail ? 1 : 0);
             }
         });
+    }
 
     function runTestCase([label, testcase, x, y]) {
         let _timeout = isNum(x) ? x : (isNum(y) ? y : timeout);
