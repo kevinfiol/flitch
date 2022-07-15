@@ -104,7 +104,7 @@ export function suite(name, { timeout = 1 } = {}) {
 
             if (!failures) {
                 (failures = tests.length - passes) &&
-                    p(f(`\n✗ ${failures} tests failed.`, 41));
+                    p('\n' + f(`✗ ${failures} tests failed.`, 41));
             }
 
             totalFailures += failures;
