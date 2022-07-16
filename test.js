@@ -180,25 +180,6 @@ test10.after.all = (ctx) => {
   assert.equal(ctx.foo, 0);
 };
 
-const test11 = suite.only('Parallel test', { parallel: true });
-
-test11.before.each = (ctx) => {
-  // ctx is pretty much essential to parallel tests
-  ctx.foo = 1;
-  console.log({ctx});
-};
-
-test11('foo should be 1', ctx => {
-  console.log('1');
-  assert.equal(ctx.foo, 1);
-  ctx.foo += 10;
-});
-
-test11('foo should still be 1', ctx => {
-  console.log('2');
-  assert.equal(ctx.foo, 1);
-});
-
 const runSuites = async (...suites) => {
   for (let i = 0; i < suites.length; i++) {
     await suites[i].run();
@@ -216,7 +197,6 @@ await runSuites(
   test8,
   test9,
   test10,
-  test11,
   ModuleA,
   ModuleB
 );
