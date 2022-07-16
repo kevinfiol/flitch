@@ -9,7 +9,7 @@ let DURATION = 'Duration',
     fail = false,
     isFn = x => typeof x == 'function',
     isNum = Number.isFinite,
-    p = (s, ...c) => console.log(c.map(x => `\x1b[${x}m`).join('') + `${s}\x1b[0m`);
+    p = (s = '', ...c) => console.log(c.map(x => `\x1b[${x}m`).join('') + `${s}\x1b[0m`);
 
 function noop() {}
 
@@ -128,17 +128,13 @@ export function suite(name, { timeout = 1 } = {}) {
                 totalSkips += skip,
                 p(`↷ ${skip} tests skipped.`, 30, 43);
 
-            p('');
+            p();
             if (onlySuite || ++suitesRan == suites) {
-                p('• • •');
-                p(`Passed: ${totalPasses}`);
-                p(`Failed: ${totalFailures}`);
-                p(`Skipped: ${totalSkips}`);
-
+                p(`• • •\nPassed: ${totalPasses}\nFailed: ${totalFailures}\nSkipped: ${totalSkips}`);
                 if (skipSuite.length || onlySuite) {
-                    p('');
+                    p();
                     p(`↷ ${skipSuite.length || suites - 1} suites skipped.`, 30, 43);
-                    p('');
+                    p();
                 }
 
                 console.timeEnd(DURATION);

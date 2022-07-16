@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert';
 import { sub } from './b.js';
-import { suite } from '../dist/flitch.js';
+import { suite } from '../index.js';
 
 let ran = false;
 const ModuleB = suite('ModuleB tests');

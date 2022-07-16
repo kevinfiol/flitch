@@ -1,4 +1,4 @@
-import { suite } from './dist/flitch.js';
+import { suite } from './index.js';
 import { strict as assert } from 'assert';
 import { ModuleA, ModuleB } from './test/index.js';
 
