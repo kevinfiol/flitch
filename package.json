@@ -9,7 +9,6 @@
   "main": "dist/flitch.cjs",
   "module": "index.js",
   "types": "index.d.ts",
-  "umd:name": "flitch",
   "scripts": {
     "test": "node test.js",
     "build": "node transpile.js && node test.js"
