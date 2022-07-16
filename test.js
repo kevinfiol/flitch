@@ -184,6 +184,12 @@ const runSuites = async (...suites) => {
   for (let i = 0; i < suites.length; i++) {
     await suites[i].run();
   }
+
+  // let runs = [];
+  // for (let i = 0; i < suites.length; i++) {
+  //   runs.push(suites[i].run());
+  // }
+  // return Promise.all(runs);
 };
 
 await runSuites(
