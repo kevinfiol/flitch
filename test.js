@@ -1,4 +1,4 @@
-import { suite } from './index.js';
+import { suite, run } from './index.js';
 import { strict as assert } from 'assert';
 import { ModuleA, ModuleB } from './test/index.js';
 
@@ -14,7 +14,7 @@ function timer(timeout) {
 
 let foo;
 
-const test1 = suite('Flitch Regular Tests');
+const test1 = suite.only('Flitch Regular Tests');
 
 test1.before.all = () => {
   foo = 0;
@@ -180,29 +180,31 @@ test10.after.all = (ctx) => {
   assert.equal(ctx.foo, 0);
 };
 
-const runSuites = async (...suites) => {
-  for (let i = 0; i < suites.length; i++) {
-    await suites[i].run();
-  }
+await run({ parallel: true });
 
-  // let runs = [];
-  // for (let i = 0; i < suites.length; i++) {
-  //   runs.push(suites[i].run());
-  // }
-  // return Promise.all(runs);
-};
+// const runSuites = async (...suites) => {
+//   for (let i = 0; i < suites.length; i++) {
+//     await suites[i].run();
+//   }
 
-await runSuites(
-  test1,
-  test2,
-  test3,
-  test4,
-  test5,
-  test6,
-  test7,
-  test8,
-  test9,
-  test10,
-  ModuleA,
-  ModuleB
-);
+//   // let runs = [];
+//   // for (let i = 0; i < suites.length; i++) {
+//   //   runs.push(suites[i].run());
+//   // }
+//   // return Promise.all(runs);
+// };
+
+// await runSuites(
+//   test1,
+//   test2,
+//   test3,
+//   test4,
+//   test5,
+//   test6,
+//   test7,
+//   test8,
+//   test9,
+//   test10,
+//   ModuleA,
+//   ModuleB
+// );
