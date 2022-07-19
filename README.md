@@ -7,32 +7,30 @@
 A cute testing library that barks at you.
 
 ```js
-import { suite } from 'flitch';
+import { suite, run } from 'flitch';
 import { strict as assert } from 'assert';
 
-let sum = 0; // declare arbitrary test variables
+// create suite with timeout of 5 seconds for all operations
+const test = suite('Flitch Tests', { timeout: 5 });
 
-const test = suite('Flitch Tests', { timeout: 5 }); // set timeout to 5 seconds for all operations
+// attach before/after hooks
+// e.g, test.before.all, test.before.each, test.after.all, test.after.each
+test.before.all = (ctx) => {
+  // use context object to share values within suite
+  ctx.sum = 0;
+};
 
-test.before.each = () => {}; // will run before each test case
-
-test.before.all = () => {}; // will run before all test cases
-
-test.after.each = () => {}; // will run after each test case
-
-test.after.all = () => {}; // will run after all test cases
-
-test('addition works', () => {
-  sum += 10;
-  assert.equal(sum, 10); // tests rely on thrown errors to detect failures
+test('addition works', (ctx) => {
+  ctx.sum += 10;
+  assert.equal(ctx.sum, 10); // tests rely on thrown errors to detect failures
 });
 
-test.not('this test will be skipped', () => {
-  sum += 20;
-  assert.equal(sum, 21); // this would fail, but we're skipping this test! *shrugs*
+test.not('this test will be skipped', (ctx) => {
+  ctx.sum += 20;
+  assert.equal(ctx.sum, 31); // this would fail, but we're skipping this test! *shrugs*
 });
 
-test.not('this test would timeout but we are skipping it as well', async () => {
+test.skip('test.skip is an alias for test.not', async () => {
   await new Promise(resolve => setTimeout(resolve, 6 * 1000));
 });
 
@@ -40,22 +38,23 @@ test('this test would not timeout!', async () => {
   await new Promise(resolve => setTimeout(resolve, 6 * 1000));
 }, 7); // timeout can be specified per test
 
-test('this test cleans up after itself', async () => {
+test('this test cleans up after itself', async (ctx) => {
   await new Promise(resolve => setTimeout(resolve, 2 * 1000));
-  sum += 100;
+  ctx.sum += 100;
 },
   3, // time out after 3 seconds
   () => {
-    sum -= 100; // cleanup
+    ctx.sum -= 100; // cleanup
   }
 );
 
-test.only('this test will run, by itself!', async () => {
-  sum = await Promise.resolve(50);
-  assert.equal(sum, 50);
+test.only('this test will run, by itself!', async (ctx) => {
+  let num = await Promise.resolve(50);
+  ctx.sum += num;
+  assert.equal(ctx.sum, 50);
 });
 
-test.run(); // this function is a thenable; chain it if you want
+run({ parallel: false }); // optionally run all suites in parallel
 ```
 
 Save the above to `test.js` and run like so:
@@ -66,18 +65,18 @@ node test.js
 The above outputs:
 ```
 Flitch Tests
-Tests Passed ✓: 1
-Tests Failed ✗: 0
+✓ 1 tests passed
+↷ 5 tests skipped
 
-✓ All 1 tests passed.
+⧗ 0.001s
 
-Only the following testcase was run:
-• this test will run, by itself!
+• • •
 
-Duration: 3.514ms
+Passed:  1
+Failed:  0
+Skipped: 10
+Duration: 0.003s
 ```
-
-*Note: All suites created using `suite` must be run for failed test scripts to properly exit.*
 
 ## Install
 
