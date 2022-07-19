@@ -52,13 +52,8 @@ function printSuite({ name, errors, passes, failures, skip, time }) {
     p(name, 4, 1);
     errors.map(printError);
     if (failures) p(`✗ ${failures} tests failed`, 41);
-
     if (passes) p(`✓ ${passes} tests passed`, 42);
-
-    if (skip)
-        totalSkips += skip,
-        p(`↷ ${skip} tests skipped`, 30, 43);
-
+    if (skip) p(`↷ ${skip} tests skipped`, 30, 43);
     p(`\n⧗ ${time}\n`);
 }
 
