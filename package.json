@@ -14,7 +14,7 @@
     "build": "node transpile.js && node test.js"
   },
   "engines": {
-    "node": ">=14.8.x"
+    "node": ">=14.x"
   },
   "files": [
     "*.d.ts",

@@ -9,6 +9,7 @@ let DURATION = 'Duration',
     fail = false,
     isFn = x => typeof x == 'function',
     isNum = Number.isFinite,
+    startTimer = (now = Date.now()) => _ => (Date.now() - now) + 'ms',
     f = (s = '', ...c) => c.map(x => `\x1b[${x}m`).join('') + `${s}\x1b[0m`,
     p = (s = '', ...c) => console.log(f(s, ...c));
 
@@ -30,12 +31,12 @@ function printError([label, message]) {
 }
 
 function race(label, op, timeout) {
-    let timer;
-    let clear = _ => clearTimeout(timer);
+    let tick;
+    let clear = _ => clearTimeout(tick);
 
     return Promise.race([
         new Promise((_, rej) =>
-            timer = setTimeout(_ =>
+            tick = setTimeout(_ =>
                 rej(
                     `[${label}] timed out after ${timeout} seconds.`
                 ),
@@ -58,8 +59,9 @@ suite.only = (name, ...args) => {
     return suite(name, ...args);
 };
 
-function printSuite({ name, errors, passes, skip, failures }) {
-    console.timeEnd(f(name, 4, 1));
+function printSuite({ name, time, errors, passes, skip, failures }) {
+    p(name, 4, 1);
+    p(time);
     errors.map(printError);
     if (failures) p(`✗ ${failures} tests failed.`, 41);
 
@@ -76,12 +78,10 @@ export function run({ parallel = true } = {}) {
             QUEUE.push(SUITES[name]);
     }
 
-    console.time(DURATION);
-
-    // console.log(QUEUE);
+    let timer = startTimer();
 
     return (parallel
-        ? Promise.all(QUEUE)
+        ? Promise.all(QUEUE.map(p => p()))
         : (async _ => {
             const results = [];
 
@@ -101,7 +101,8 @@ export function run({ parallel = true } = {}) {
             p();
         }
 
-        console.timeEnd(DURATION);
+        p(`Duration: ${timer()}`);
+        console.log({fail, process});
         process.exit(fail ? 1 : 0);
     });
 }
@@ -126,8 +127,8 @@ export function suite(name, { timeout = 1 } = {}) {
 
     $.not = $.skip = _ => skip++;
 
-    SUITES[name] = chain().then(async _ => {
-        console.time(f(name, 4, 1));
+    SUITES[name] = _ => chain().then(async _ => {
+        const timer = startTimer();
         await runOp('before.all hook', chain(ctx, $.before.all));
 
         if (onlyTest)
@@ -149,6 +150,7 @@ export function suite(name, { timeout = 1 } = {}) {
         }
 
         await runOp('after.all hook', chain(ctx, $.after.all));
+        const time = timer();
 
         if (failures)
             totalFailures += failures,
@@ -156,7 +158,7 @@ export function suite(name, { timeout = 1 } = {}) {
 
         if (skip) totalSkips += skip;
 
-        return { name, errors, passes, failures, skip };
+        return { name, errors, passes, failures, skip, time };
     });
 
     function runOp(label, op, x, y, onSuccess = noop, onFail = noop, onComplete = noop) {

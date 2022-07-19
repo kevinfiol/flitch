@@ -14,7 +14,7 @@ function timer(timeout) {
 
 let foo;
 
-const test1 = suite.only('Flitch Regular Tests');
+const test1 = suite('Flitch Regular Tests');
 
 test1.before.all = () => {
   foo = 0;
@@ -142,10 +142,10 @@ test8.before.all = async () => {
 
 test8('SHOULD FAIL: Suite should fail', () => {});
 
-const test9 = suite('Flitch Timeout in After All *SUITE FAILURE*', { timeout: 0.02 });
+const test9 = suite.only('Flitch Timeout in After All *SUITE FAILURE*', { timeout: 1.34592930 });
 
 test9.after.all = async () => {
-  await timer(0.03);
+  await timer(3);
 };
 
 test9('SHOULD FAIL: Suite should fail', () => {});
@@ -180,7 +180,7 @@ test10.after.all = (ctx) => {
   assert.equal(ctx.foo, 0);
 };
 
-await run({ parallel: true });
+await run({ parallel: false });
 
 // const runSuites = async (...suites) => {
 //   for (let i = 0; i < suites.length; i++) {
