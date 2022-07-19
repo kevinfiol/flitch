@@ -1,6 +1,6 @@
 {
   "name": "flitch",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "author": "kevinfiol",
   "license": "MIT",
   "repository": "https://github.com/kevinfiol/flitch",
@@ -18,7 +18,8 @@
   },
   "files": [
     "*.d.ts",
-    "dist"
+    "dist",
+    "index.js"
   ],
   "keywords": [
     "testing",
