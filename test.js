@@ -152,4 +152,5 @@ test9.after.all = async () => {
 
 test9('passes', () => {});
 
+// pass 20, fail 4, skip 2
 await run({ parallel: true });

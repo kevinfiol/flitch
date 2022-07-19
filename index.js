@@ -8,25 +8,15 @@ let QUEUE = [],
     fail = false,
     isFn = x => typeof x == 'function',
     isNum = Number.isFinite,
-    startTimer = (now = Date.now()) => _ => ((Date.now() - now) / 1000) + 's',
-    f = (s = '', ...c) => c.map(x => `\x1b[${x}m`).join('') + `${s}\x1b[0m`,
-    p = (s = '', ...c) => console.log(f(s, ...c));
+    start = (now = Date.now()) => _ => ((Date.now() - now) / 1000) + 's',
+    p = (s = '', ...c) => console.log(c.map(x => `\x1b[${x}m`).join('') + `${s}\x1b[0m`);
 
 function noop() {}
 
 function chain(ctx, ...ops) {
     let promise = Promise.resolve();
-
-    for (let i = 0, len = ops.length; i < len; i++) {
-        promise = promise.then(_ => ops[i](ctx));
-    }
-
+    for (let op of ops) promise = promise.then(_ => op(ctx));
     return promise;
-}
-
-function printError([label, message]) {
-    p('✗ ' + label, 47, 30);
-    p(message + '\n');
 }
 
 function race(label, op, timeout) {
@@ -35,25 +25,21 @@ function race(label, op, timeout) {
 
     return Promise.race([
         new Promise((_, rej) =>
-            tick = setTimeout(_ =>
-                rej(
-                    `[${label}] timed out after ${timeout}s.`
-                ),
+            tick = setTimeout(
+                _ => rej(`[${label}] timed out after ${timeout}s.`),
                 1000 * timeout
             )
         ),
-        isFn(op)
-            ? op() || 1 && clear()
-            : op.finally(clear)
+        isFn(op) ? op() || 1 && clear() : op.finally(clear)
     ]);
 }
 
 function printSuite({ name, errors, passes, failures, skip, time }) {
     p(name, 4, 1);
-    errors.map(printError);
-    if (failures) p(`✗ ${failures} tests failed`, 41);
-    if (passes) p(`✓ ${passes} tests passed`, 42);
-    if (skip) p(`↷ ${skip} tests skipped`, 30, 43);
+    errors.map(e => { p('✗ ' + e[0], 47, 30); p(e[1] + '\n') });
+    failures && p(`✗ ${failures} tests failed`, 41);
+    passes && p(`✓ ${passes} tests passed`, 42);
+    skip && p(`↷ ${skip} tests skipped`, 30, 43);
     p(`\n⧗ ${time}\n`);
 }
 
@@ -63,17 +49,13 @@ export function run({ parallel = false } = {}) {
             QUEUE.push(SUITES[name]);
     }
 
-    let timer = startTimer();
+    let end = start();
 
     return (parallel
         ? Promise.all(QUEUE.map(p => p()))
         : (async _ => {
             let results = [];
-
-            for (let i = 0, len = QUEUE.length; i < len; i++) {
-                results.push(await QUEUE[i]());
-            }
-
+            for (let job of QUEUE) results.push(await job());
             return results;
         })()
     ).then(results =>
@@ -86,20 +68,16 @@ export function run({ parallel = false } = {}) {
             p();
         }
 
-        p(`Duration: ${timer()}\n`);
+        p(`Duration: ${end()}\n`);
         process.exit(fail ? 1 : 0);
     });
 }
 
-suite.not = suite.skip = (name, ...args) => {
-    skipSuite.push(name);
-    return suite(name, ...args);
-};
+suite.not = suite.skip = (name, ...args) =>
+    skipSuite.push(name) && suite(name, ...args);
 
-suite.only = (name, ...args) => {
-    onlySuite = name;
-    return suite(name, ...args);
-};
+suite.only = (name, ...args) =>
+    (onlySuite = name || 1) && suite(name, ...args);
 
 export function suite(name, { timeout = 1 } = {}) {
     let ctx = {},
@@ -122,16 +100,14 @@ export function suite(name, { timeout = 1 } = {}) {
     $.not = $.skip = _ => skip++;
 
     SUITES[name] = _ => chain().then(async _ => {
-        const timer = startTimer();
+        let end = start();
         await runOp('before.all hook', chain(ctx, $.before.all));
 
         if (onlyTest)
-            skip = tests.length + skip,
+            skip += tests.length,
             tests = [onlyTest];
 
-        for (let i = 0, len = tests.length; i < len; i++) {
-            let [label, testcase, x, y] = tests[i];
-
+        for (let [label, testcase, x, y] of tests)
             await runOp(
                 label,
                 chain(ctx, $.before.each, testcase),
@@ -141,10 +117,8 @@ export function suite(name, { timeout = 1 } = {}) {
                 _ => failures++,
                 $.after.each
             );
-        }
 
         await runOp('after.all hook', chain(ctx, $.after.all));
-        const time = timer();
 
         if (failures)
             totalFailures += failures,
@@ -152,7 +126,7 @@ export function suite(name, { timeout = 1 } = {}) {
 
         if (skip) totalSkips += skip;
 
-        return { name, errors, passes, failures, skip, time };
+        return { name, errors, passes, failures, skip, time: end() };
     });
 
     function runOp(label, op, x, y, onSuccess = noop, onFail = noop, onComplete = noop) {
