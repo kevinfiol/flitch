@@ -36,7 +36,7 @@ function race(label, op, timeout) {
 
 function printSuite({ name, errors, passes, failures, skip, time }) {
     p(name, 4, 1);
-    errors.map(e => { p('✗ ' + e[0], 47, 30); p(e[1] + '\n') });
+    errors.map(e => p('✗ ' + e[0], 47, 30) + p(e[1] + '\n'));
     failures && p(`✗ ${failures} tests failed`, 41);
     passes && p(`✓ ${passes} tests passed`, 42);
     skip && p(`↷ ${skip} tests skipped`, 30, 43);
@@ -62,8 +62,8 @@ export function run({ parallel = false } = {}) {
     ).finally(_ => {
         p(`• • •\n\nPassed:  ${totalPasses}\nFailed:  ${totalFailures}\nSkipped: ${totalSkips}\n`);
         if (skipSuite.length || onlySuite)
-            p(`↷ ${skipSuite.length || Object.keys(SUITES).length - 1} suites skipped`, 30, 43);
-        p(`\nDuration: ${end()}\n`);
+            p(`↷ ${skipSuite.length || Object.keys(SUITES).length - 1} suites skipped`, 30, 43) + p('');
+        p(`Duration: ${end()}\n`);
         process.exit(fail ? 1 : 0);
     });
 }
