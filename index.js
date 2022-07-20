@@ -62,7 +62,7 @@ export function run({ parallel = false } = {}) {
     ).finally(_ => {
         p(`• • •\n\nPassed:  ${totalPasses}\nFailed:  ${totalFailures}\nSkipped: ${totalSkips}\n`);
         if (skipSuite.length || onlySuite)
-            p(`↷ ${skipSuite.length || Object.keys(SUITES).length - 1} suites skipped.`, 30, 43);
+            p(`↷ ${skipSuite.length || Object.keys(SUITES).length - 1} suites skipped`, 30, 43);
         p(`\nDuration: ${end()}\n`);
         process.exit(fail ? 1 : 0);
     });
@@ -72,7 +72,7 @@ suite.not = suite.skip = name =>
     skipSuite.push(name) && suite(name);
 
 suite.only = (name, ...args) =>
-    (onlySuite = name || 1) && suite(name, ...args);
+    (onlySuite = name) && suite(name, ...args);
 
 export function suite(name, { timeout = 1 } = {}) {
     let ctx = {},

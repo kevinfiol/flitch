@@ -54,6 +54,13 @@ test.only('this test will run, by itself!', async (ctx) => {
   assert.equal(ctx.sum, 50);
 });
 
+// `not`, `skip`, and `only` can also be used on suites
+const test2 = suite.skip('This whole suite will be skipped');
+
+test2('this will never run!', () => {
+  assert.equal(1, 1);
+});
+
 run({ parallel: false }); // optionally run all suites in parallel
 ```
 
@@ -74,8 +81,11 @@ Flitch Tests
 
 Passed:  1
 Failed:  0
-Skipped: 10
-Duration: 0.003s
+Skipped: 5
+
+↷ 1 suites skipped
+
+Duration: 0.004s
 ```
 
 ## Install
