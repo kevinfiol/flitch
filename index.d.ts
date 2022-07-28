@@ -1,10 +1,11 @@
-type Callback = () => any;
+type Callback = (ctx: Record<string, any>) => any;
 
-type TestFn =
-    ((label: string, testcase: Callback, cleanup?: Callback) => void | Promise<void>) |
-    ((label: string, testcase: Callback, cleanup?: Callback, timeout?: number) => void | Promise<void>) |
-    ((label: string, testcase: Callback, timeout?: number, cleanup?: Callback) => void | Promise<void>) |
-    ((label: string, testcase: Callback, timeout?: number) => void | Promise<void>);
+type TestFn = <A extends Callback | Timeout>(
+    label: string,
+    testcase: Callback,
+    arg1?: A,
+    arg2?: A extends Callback ? Timeout : Callback
+) => void | Promise<void>;
 
 type SuiteFn = (name: string, opts: { timeout: number }) => Suite;
 
@@ -17,5 +18,10 @@ type Suite = TestFn & {
     after: { each: Callback, all: Callback };
 };
 
-export const suite: SuiteFn & { not: SuiteFn, skip: SuiteFn, only: SuiteFn };
+export const suite: SuiteFn & {
+    not: (name: string) => Suite,
+    skip: (name: string) => Suite,
+    only: SuiteFn
+};
+
 export function run(opts: { parallel: boolean }): Promise<void>;
