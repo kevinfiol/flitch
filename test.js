@@ -1,6 +1,6 @@
 import { suite, run } from './index.js';
 import { strict as assert } from 'assert';
-import { ModuleA, ModuleB } from './test/index.js';
+import { ModuleA, ModuleB } from './tests/index.js';
 
 process.exit = () => {};
 
