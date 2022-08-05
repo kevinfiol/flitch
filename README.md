@@ -94,5 +94,11 @@ Duration: 0.004s
 npm install flitch --save-dev
 ```
 
+## Running all test files in a directory
+
+This package doesn't include any utilities to crawl directories for test files since that is a bit out of scope. Using `run()` will simply run any test suite defined in your import path. That means you can simply import all of your suites in a base `runTests.js` script and call `run()` afterwards.
+
+This can get tedious as you'll have to manually import every test suite you create (although this isn't necessarily a bad thing). However, you can use Node APIs or something like [totalist](https://github.com/lukeed/totalist) to dynamically import all test files before calling `run()`. See [this example](examples/runTests.js) for a solution using a simple recursive directory walking function.
+
 ## Credits
 Inspired by [fantestic](https://github.com/porsager/fantestic).
