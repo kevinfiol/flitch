@@ -7,7 +7,7 @@ import { pathToFileURL } from 'url';
 const PATH = './tests';
 
 (async () => {
-    for await (let file of await walk(resolve(PATH))) {
+    for (let file of await walk(resolve(PATH))) {
         if (file.endsWith('.test.js')) {
             // import all *.test.js files containing suites
             await import(pathToFileURL(file));
