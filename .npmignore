@@ -4,4 +4,5 @@ _ignore.js
 transpile.js
 logo.jpg
 test.js
-test/
+tests/
+examples/
