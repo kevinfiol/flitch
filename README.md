@@ -43,7 +43,7 @@ test('this test cleans up after itself', async (ctx) => {
   ctx.sum += 100;
 },
   3, // time out after 3 seconds
-  () => {
+  (ctx) => {
     ctx.sum -= 100; // cleanup
   }
 );
