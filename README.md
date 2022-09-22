@@ -94,11 +94,21 @@ Duration: 0.004s
 npm install flitch --save-dev
 ```
 
-## Running all test files in a directory
+Pass a string to `path` to recursively look for test files. By default, test files with `.test.js` and `.test.jsx` extensions will be imported. A regular expression can be passed to `ext` for custom extensions.
 
-This package doesn't include any utilities to crawl directories for test files since that is a bit out of scope. Using `run()` will simply run any test suite defined in your import path. That means you can simply import all of your suites in a base `runTests.js` script and call `run()` afterwards.
+```js
+import { run } from 'flitch';
 
-This can get tedious as you'll have to manually import every test suite you create (although this isn't necessarily a bad thing). However, you can use Node APIs or something like [totalist](https://github.com/lukeed/totalist) to dynamically import all test files before calling `run()`. See [this example](examples/runTests.js) for a solution using a simple recursive directory walking function.
+run({
+  // path: string
+  // relative to `process.cwd()`
+  path: './tests',
+
+  // ext: RegExp
+  // used to match against files
+  ext: /\.test.(js|cjs|mjs)$/
+});
+```
 
 ## Credits
 Inspired by [fantestic](https://github.com/porsager/fantestic).

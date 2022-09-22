@@ -1,3 +1,7 @@
+import { opendir } from 'fs/promises';
+import { resolve, join } from 'path';
+import { pathToFileURL } from 'url';
+
 let QUEUE = [],
     SUITES = [],
     totalPasses = 0,
@@ -43,7 +47,13 @@ function printSuite({ name, errors, passes, failures, skip, time }) {
     p(`\n⧗ ${time}\n`);
 }
 
-export function run({ parallel = false } = {}) {
+export async function run({ parallel = false, path = '', ext = /\.test.(js|jsx)$/ } = {}) {
+    if (path) {
+        for (let file of await walk(resolve(path))) {
+            if (ext.test(file)) await import(pathToFileURL(file));
+        }
+    }
+
     for (let name in SUITES)
         if (!skipSuite.includes(name) && !(onlySuite && name != onlySuite))
             QUEUE.push(SUITES[name]);
@@ -125,4 +135,14 @@ export function suite(name, { timeout = 1 } = {}) {
     }
 
     return $;
+}
+
+async function walk(dir, files = []) {
+    for await (let dirent of await opendir(dir)) {
+        const file = join(dir, dirent.name);
+        if (dirent.isDirectory()) files.concat(await walk(file, files));
+        else if (dirent.isFile()) files.push(file);
+    }
+
+    return files;
 }

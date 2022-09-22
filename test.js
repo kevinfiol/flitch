@@ -1,6 +1,6 @@
 import { suite, run } from './index.js';
 import { strict as assert } from 'assert';
-import { ModuleA, ModuleB } from './tests/index.js';
+// import { ModuleA, ModuleB } from './tests/index.js';
 
 process.exit = () => {};
 
@@ -152,5 +152,5 @@ test9.after.all = async () => {
 
 test9('passes', () => {});
 
-// pass 20, fail 4, skip 2
-await run({ parallel: true });
+// pass 21, fail 4, skip 2
+await run({ parallel: true, path: './tests' });

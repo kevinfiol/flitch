@@ -24,4 +24,4 @@ export const suite: SuiteFn & {
     only: SuiteFn
 };
 
-export function run(opts: { parallel: boolean }): Promise<void>;
+export function run(opts: { parallel: boolean, path?: string, ext?: RegExp }): Promise<void>;
