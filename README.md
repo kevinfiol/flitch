@@ -94,6 +94,8 @@ Duration: 0.004s
 npm install flitch --save-dev
 ```
 
+## Running all test files in a directory
+
 Pass a string to `path` to recursively look for test files. By default, test files with `.test.js` and `.test.jsx` extensions will be imported. A regular expression can be passed to `ext` for custom extensions.
 
 ```js
@@ -105,7 +107,7 @@ run({
   path: './tests',
 
   // ext: RegExp
-  // used to match against files
+  // used to match filenames
   ext: /\.test.(js|cjs|mjs)$/
 });
 ```
