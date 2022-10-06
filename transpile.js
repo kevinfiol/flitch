@@ -13,6 +13,7 @@ function transpile(x) {
         .replace(/export {/g, 'module.exports = {')
         .replace(/export const ([a-z0-9_$]+)/gi, 'const $1 = module.exports.$1')
         .replace(/export function ([a-z0-9_$]+)/gi, 'module.exports.$1 = $1;function $1')
+        .replace(/export async function ([a-z0-9_$]+)/gi, 'module.exports.$1 = $1;async function $1')
         .replace(/import {([^{}]*?)} from (['"].*?['"])/gi, 'const {$1} = require($2)')
         .replace(/import (.*?) from (['"].*?['"])/gi, 'const $1 = require($2)')
         .replace(/import (['"].*?['"])/gi, 'require($1)')
