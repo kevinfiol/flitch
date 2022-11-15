@@ -40,7 +40,7 @@ function race(label, op, timeout) {
 
 function printSuite({ name, errors, passes, failures, skip, time }) {
     p(name, 4, 1);
-    errors.map(e => p('✗ ' + e[0], 47, 30) + p(e[1] + '\n'));
+    errors.map(e => p('✗ ' + e[0], 47, 30) + console.trace(e[1]) + p());
     failures && p(`✗ ${failures} tests failed`, 41);
     passes && p(`✓ ${passes} tests passed`, 42);
     skip && p(`↷ ${skip} tests skipped`, 30, 43);
@@ -127,7 +127,7 @@ export function suite(name, { timeout = 1 } = {}) {
     function runOp(label, op, x, y, onSuccess = noop, onFail = noop, onComplete = noop) {
         let opTimeout = isNum(x) ? x : (isNum(y) ? y : timeout);
         let cleanup = isFn(x) ? x : (isFn(y) ? y : noop);
-        let addError = e => errors.push([label, e.message || e]);
+        let addError = e => errors.push([label, e]);
 
         return race(label, op, opTimeout).then(onSuccess)
             .catch(e => addError(e) && onFail())
